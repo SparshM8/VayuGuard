@@ -13,23 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Urban Air Quality Assistant - Smart AQI Guidance for Healthy Living",
-  description: "GenAI-powered assistant helping families and communities navigate urban air pollution with personalized low-emission routines, indoor air quality hacks, and sustainable alternatives.",
-  keywords: ["air quality", "AQI", "pollution", "health", "sustainability", "smog", "PM2.5", "air purifier", "indoor air"],
-  authors: [{ name: "Urban Air Quality Assistant" }],
-  creator: "Urban Air Quality Assistant",
-  publisher: "Urban Air Quality Assistant",
+  title: "VayuGuard AI - Smart Winter Smog & Urban Clean-Air Navigator",
+  description: "GenAI-powered assistant helping families and communities navigate severe winter smog and urban air pollution with personalized low-emission routines, indoor air quality hacks, and sustainable alternatives.",
+  keywords: ["air quality", "AQI", "VayuGuard", "smog", "winter smog", "pollution", "health", "sustainability", "PM2.5", "air purifier", "indoor air", "CPCB", "Open-Meteo"],
+  authors: [{ name: "VayuGuard AI" }],
+  creator: "VayuGuard AI",
+  publisher: "VayuGuard AI",
   robots: "index, follow",
   openGraph: {
-    title: "Urban Air Quality Assistant - Smart AQI Guidance for Healthy Living",
+    title: "VayuGuard AI - Smart Winter Smog & Urban Clean-Air Navigator",
     description: "GenAI-powered assistant helping families and communities navigate urban air pollution with personalized recommendations.",
     type: "website",
     locale: "en_US",
-    siteName: "Urban Air Quality Assistant",
+    siteName: "VayuGuard AI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Urban Air Quality Assistant",
+    title: "VayuGuard AI",
     description: "GenAI-powered assistant for navigating urban air pollution with personalized guidance.",
   },
   verification: {

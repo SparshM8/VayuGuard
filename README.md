@@ -1,6 +1,6 @@
-# 🌫️ Urban Air Quality Assistant
+# 🌫️ VayuGuard AI (Urban Air Quality Assistant)
 
-> **Challenge 6: Urban Air Quality Assistant** — A Generative AI-powered web application helping urban families and communities navigate severe winter smog and air pollution through personalized low-emission routines, indoor air quality hacks, and scientifically justified sustainable alternatives.
+> **Challenge 6: Urban Air Quality Assistant** — An advanced Generative AI-powered web platform helping urban families and communities navigate severe winter smog and air pollution through personalized low-emission routines, indoor air quality hacks, and scientifically justified sustainable alternatives.
 
 ---
 
