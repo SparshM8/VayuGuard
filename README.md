@@ -1,36 +1,234 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌫️ Urban Air Quality Assistant
 
-## Getting Started
+> **Challenge 6: Urban Air Quality Assistant** — A Generative AI-powered web application helping urban families and communities navigate severe winter smog and air pollution through personalized low-emission routines, indoor air quality hacks, and scientifically justified sustainable alternatives.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📋 Table of Contents
+1. [Overview & Chosen Vertical](#-overview--chosen-vertical)
+2. [Problem Statement Alignment](#-problem-statement-alignment)
+3. [Core Functionalities & Objectives](#-core-functionalities--objectives)
+4. [Architecture & Technical Design](#-architecture--technical-design)
+5. [Real-time Data Sourcing & Transparency](#-real-time-data-sourcing--transparency)
+6. [Generative AI Prompt Flow & Personalization](#-generative-ai-prompt-flow--personalization)
+7. [Approach, Logic & Assumptions](#-approach-logic--assumptions)
+8. [Impact Simulator & What-If Modeling](#-impact-simulator--what-if-modeling)
+9. [Security, Performance & Accessibility](#-security-performance--accessibility)
+10. [Test Suite & Validation](#-test-suite--validation)
+11. [Getting Started & Local Setup](#-getting-started--local-setup)
+12. [Deployment & Evaluation Checklist](#-deployment--evaluation-checklist)
+
+---
+
+## 🎯 Overview & Chosen Vertical
+
+- **Track / Challenge**: `Challenge-6: Urban Air Quality Assistant`
+- **Target Persona**: Urban families with children, daily commuters, elderly residents, active athletes, remote workers, and students living in pollution hotspots (e.g., Delhi NCR, Mumbai, Kolkata, Beijing, London).
+- **Core Mission**: Severe winter smog, crop stubble burning, and atmospheric temperature inversions frequently trap hazardous particulate matter (PM2.5, PM10) at ground breathing levels. Most existing dashboards only display passive, scary numbers without telling users *what to do* or *what the impact of their choices will be*. Urban Air Quality Assistant translates live multi-pollutant telemetry into actionable, high-impact routines, evidence-backed indoor air hacks, and quantified sustainable alternatives.
+
+---
+
+## 🌟 Core Functionalities & Objectives
+
+### 1. 🚲 Low-Emission Daily Routines
+- **Context-Aware Commute & Activity Suggestions**: Suggests optimal commute modes, trip-chaining habits, and schedule adjustments based on live AQI and user profile.
+- **Atmospheric Inversion Timing**: Advises users to avoid morning cardio during winter ground inversion (6:00 AM – 9:00 AM) and shifts errands to afternoon solar dispersion windows (1:00 PM – 3:30 PM).
+
+### 2. 🌿 Indoor Air Quality Hacks
+- **NASA Clean Air Study Plants**: Recommends proven air-purifying greenery (Snake Plant, Spider Plant, Areca Palm) with safety checks for households with pets.
+- **DIY Filtration (Corsi-Rosenthal Box)**: Step-by-step guidance for building high-CADR air cleaners using MERV-13 filters and box fans at 80% lower cost than commercial units.
+- **Precision Ventilation & Zero-Resuspension Cleaning**: Rules on window sealing with silicone weatherstrips and damp microfiber mopping over dry sweeping.
+
+### 3. 📉 Sustainable Alternatives & Quantified Impact
+- **Impact Justification**: Explains the direct carbon, particulate, and financial savings for each alternative:
+  - Solo Driving ➡️ Electric Metro + Micro-mobility: **~2,400 kg CO₂/year reduction**, 65% less roadside PM2.5 inhalation, **$1,800/yr savings**.
+  - Unventilated LPG ➡️ Induction Cooking: **~220 kg CO₂/year reduction**, eliminates 70% indoor NO₂ spikes, reduces childhood asthma risk by 42%.
+  - Leaf Burning / Landfill Organics ➡️ Aerobic Composting: Prevents toxic dioxin smoke and **saves ~350 kg CO₂e methane**.
+  - Dust-Burning Glowing Coils ➡️ Oil-Filled Sealed Radiator: Zero indoor acrolein or particulate burning.
+
+### 4. 📊 24-Hour Hourly Forecast & Window Predictor
+- Hourly AQI and PM2.5 progression over the next 24 hours.
+- Visual timeline clearly identifying the **Cleanest Outdoor Window** and **Peak Smog Danger Period**.
+
+### 5. 🧮 Interactive Household & Community Impact Simulator
+- What-If calculator enabling users to adjust commute distance, plant counts, air purifier hours, and clean cooking toggles to see real-time calculated CO₂ prevented, PM2.5 avoided, and mature tree equivalents.
+
+### 6. 🖨️ 1-Page Printable Family Smog Defense Plan
+- Accessible, one-click printable action checklist for families to stick on the refrigerator or community notice boards during high-smog emergencies.
+
+---
+
+## 🏗️ Architecture & Technical Design
+
+```
+urban-air-quality-assistant/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── aqidata/route.ts          # Real-time AQI & Geocoding endpoint
+│   │   │   └── recommendations/route.ts  # Gemini AI recommendation generator
+│   │   ├── layout.tsx                    # Next.js root layout with preconnect tags
+│   │   ├── page.tsx                      # Main interactive application page
+│   │   └── globals.css                   # Tailwind CSS design tokens
+│   ├── components/
+│   │   ├── AQIDashboard.tsx              # Main AQI card, source attribution & pollutants
+│   │   ├── HourlyForecast.tsx            # 24-hour horizontal forecast timeline
+│   │   ├── ImpactCalculator.tsx          # Interactive What-If impact simulator
+│   │   ├── SmogAlertBanner.tsx           # Emergency winter smog advisory banner
+│   │   ├── FamilySmogDefensePlan.tsx     # Printable 1-page emergency action plan
+│   │   ├── PersonalizedAdvice.tsx        # GenAI clinical & routine guidance
+│   │   ├── RoutineSuggestions.tsx        # Daily low-emission routines
+│   │   ├── IndoorAirQuality.tsx          # Evidence-backed indoor air hacks
+│   │   ├── SustainableAlternatives.tsx   # Justified sustainable alternatives
+│   │   └── UserProfileForm.tsx           # Persona & health preference modal
+│   ├── hooks/
+│   │   └── useAQIData.ts                 # React hooks for API state & city search
+│   ├── lib/
+│   │   ├── aqidata.ts                    # Geocoding, EPA AQI breakpoints, Open-Meteo & OpenAQ
+│   │   ├── recommendations.ts            # Gemini 1.5 Flash prompt engine & rule fallback
+│   │   └── icons.ts                      # Accessible Lucide icon mappings
+│   └── types/
+│       └── index.ts                      # TypeScript schemas & API interfaces
+└── tests/
+    ├── aqi-calculation.test.ts           # EPA breakpoints & category unit tests
+    ├── recommendations.test.ts           # Persona logic & smog alert tests
+    └── geocoding-and-data.test.ts        # Live telemetry & autocomplete tests
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📡 Real-time Data Sourcing & Transparency
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+In strict compliance with the hackathon's real-time data guidelines, the application **does not use static or mock files for air quality**.
 
-## Learn More
+- **Primary Engine**: Open-Meteo Air Quality Engine integrating Copernicus Atmosphere Monitoring Service (CAMS) and regional ground station calibrations (Central Pollution Control Board - CPCB reference in India).
+- **Global Coverage**: Supports any searched city worldwide (Delhi, Mumbai, Bengaluru, New York, London, Beijing, etc.) or GPS coordinates.
+- **Monitored Pollutants**: PM2.5, PM10, Carbon Monoxide (CO), Nitrogen Dioxide (NO₂), Sulfur Dioxide (SO₂), and Ozone (O₃).
+- **EPA Breakpoint Engine**: Computes exact sub-indices following standard US-EPA breakpoints and Indian National AQI thresholds.
+- **Source & Timestamp Display**: Every reading prominently displays the **Exact Source Name**, **Documentation Link**, **Coordinates**, and **Relative + Exact Timestamp** (e.g. `12 minutes ago (1:30 PM)`).
+- **OpenAQ Compatibility**: Seamlessly accepts `OPENAQ_API_KEY` for OpenAQ v3 integration.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🤖 Generative AI Prompt Flow & Personalization
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Model
+- **Google Gemini 1.5 Flash** (`gemini-1.5-flash`) via `@google/generative-ai`.
+- Configured with strict JSON schema response mode (`responseMimeType: "application/json"`).
 
-## Deploy on Vercel
+### Prompt Architecture
+```mermaid
+flowchart TD
+    A[User Persona & Health Preferences] --> C[Dynamic Prompt Assembly]
+    B[Live AQI, Pollutants & Smog Flag] --> C
+    C --> D[Gemini 1.5 Flash Reasoning Engine]
+    D --> E{Valid JSON Response?}
+    E -->|Yes| F[Hydrate Interactive Dashboard]
+    E -->|Fallback / Offline| G[Context-Aware Deterministic Engine]
+    G --> F
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Personalization Matrix
+| Persona Profile | Priority Vulnerabilities | Recommendation Focus |
+|---|---|---|
+| **Family with Children** | Developing lung tissue, playground exposure, school transit | N95 pediatric masking, sealed indoor play haven, pet-safe spider plants |
+| **Daily Commuter** | High roadside PM2.5 and diesel soot inhalation | Shift to Electric Metro, internal cabin AC recirculation, trip-chaining |
+| **Older Adult** | Cardiovascular strain, reduced lung elasticity | Strict morning inversion avoidance, indoor stretching, continuous HEPA |
+| **Active Athlete** | 10x ventilation rate during heavy breathing | Reschedule runs to 1:00–3:30 PM solar window; indoor gym alternatives |
+| **Remote Worker** | High indoor CO₂ & VOC accumulation | Precision midday cross-ventilation, NASA clean-air plants, quiet purifiers |
+| **Student** | High mobility, strict budget constraints | DIY Corsi-Rosenthal box cleaner, campus electric shuttles, reusable N95 |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 💡 Approach, Logic & Assumptions
+
+### Approach
+1. **Detect Context Early**: Collect user persona (commute, children, elderly, pets, apartment vs. house) with sensible defaults.
+2. **Fetch Hyperlocal Live Data**: Query atmospheric coordinates using fast, cached geocoding.
+3. **Assess Smog Severity**: Detect if AQI > 200 or PM2.5 > 120 μg/m³ to immediately activate emergency smog defense protocols.
+4. **Synthesize & Justify Actions**: Provide specific, quantified metrics (kg CO₂ saved, μg PM2.5 avoided, financial return) rather than generic tips.
+
+### Assumptions
+- **Winter Inversion Dynamics**: Boundary layer is lowest and most dangerous between 7:30 PM and 8:30 AM; solar heating expands the mixing layer around 1:00 PM – 3:30 PM.
+- **Inhalation Volume**: Average adult inhales ~15 m³ of air per day; exercising athletes inhale up to 40–60 m³.
+- **CO₂ Conversion Factor**: 1 liter of gasoline combustion produces ~2.31 kg of CO₂; single-occupant passenger cars average ~192g CO₂/km.
+
+---
+
+## 🔒 Security, Performance & Accessibility
+
+- **Security (Medium Impact)**:
+  - API keys stored in server-side environment variables (`GEMINI_API_KEY`). Never exposed to client bundles.
+  - Coordinate bound verification (-90 to +90 lat, -180 to +180 lon) and string sanitization on all search query inputs.
+  - Strict JSON parsing with regex extraction to prevent injection.
+- **Efficiency (Medium Impact)**:
+  - Next.js server caching: 5-minute revalidation for live air quality, 24-hour cache for city geocoding.
+  - Total repository size is **< 1 MB** (well under the 10 MB competition limit).
+  - Preconnect and DNS prefetch tags for external API origins.
+- **Accessibility (Low Impact)**:
+  - Tested for WCAG 2.1 AA compliance with high-contrast text badges across all 6 AQI color categories.
+  - Full keyboard accessibility with skip links, semantic landmarks (`header`, `main`, `footer`, `section`, `role="alert"`), and ARIA labels.
+  - Screen reader announcements on live updates with `aria-live="assertive"`.
+
+---
+
+## 🧪 Test Suite & Validation
+
+The application includes an automated test suite executed via `tsx` and Node's test runner:
+
+```bash
+npm test
+```
+
+### Test Coverage Highlights
+- `tests/aqi-calculation.test.ts`: Validates US-EPA breakpoint interpolation for PM2.5, PM10, NO₂, CO, SO₂, O₃, category mappings, and safe window logic.
+- `tests/recommendations.test.ts`: Tests personalization logic for families, commuters, pet owners, and verifies emergency smog alert triggers.
+- `tests/geocoding-and-data.test.ts`: Tests real-time live API telemetry fetching, coordinate resolution, and city autocomplete.
+
+---
+
+## 🚀 Getting Started & Local Setup
+
+### Prerequisites
+- Node.js 18+ (tested on Node 20 & 24)
+- npm or yarn
+
+### Quick Start
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/urban-air-quality-assistant.git
+cd urban-air-quality-assistant
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment variables (optional for local demo)
+cp .env.example .env.local
+# Edit .env.local and add your GEMINI_API_KEY (optional: smart fallback runs if omitted)
+
+# 4. Run tests
+npm test
+
+# 5. Run ESLint check
+npm run lint
+
+# 6. Build production package
+npm run build
+
+# 7. Start local server
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) in your web browser.
+
+---
+
+## 📦 Single-Branch Repository Compliance
+
+- Branch: `main` (strictly 1 branch)
+- Size: `< 1 MB` (exceeds the < 10 MB requirement)
+- Visibility: **Public GitHub Repository**
+
+---
+
+*Built with ❤️ for healthier, cleaner urban communities.*
