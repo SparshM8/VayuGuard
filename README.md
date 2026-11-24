@@ -4,11 +4,13 @@
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-VayuGuard_AI-blue?style=for-the-badge&logo=vercel)](https://vayu-guard-ten.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-SparshM8%2FVayuGuard-black?style=for-the-badge&logo=github)](https://github.com/SparshM8/VayuGuard)
+[![Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/GrbySw0j4k8)
 [![Tests Passing](https://img.shields.io/badge/Tests-13%2F13_Passing-emerald?style=for-the-badge)](https://github.com/SparshM8/VayuGuard)
 [![LinkedIn Post](https://img.shields.io/badge/LinkedIn-Announcement_Post-0A66C2?style=for-the-badge&logo=linkedin)](https://lnkd.in/p/gTSBfdGX)
 
 - 🌐 **Live Deployed App**: [https://vayu-guard-ten.vercel.app/](https://vayu-guard-ten.vercel.app/)
 - 📁 **Public GitHub Repository**: [https://github.com/SparshM8/VayuGuard](https://github.com/SparshM8/VayuGuard)
+- 🎥 **Video Demo Walkthrough**: [https://youtu.be/GrbySw0j4k8](https://youtu.be/GrbySw0j4k8)
 - 📢 **LinkedIn Post & Architecture Walkthrough**: [https://lnkd.in/p/gTSBfdGX](https://lnkd.in/p/gTSBfdGX)
 
 ---
