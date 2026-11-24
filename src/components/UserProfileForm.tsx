@@ -6,253 +6,311 @@ import {
   iconMap,
   LucideIconComponent,
 } from '@/lib/icons';
+import { X, CheckCircle2, Sliders, Shield, Heart, Baby, UserRound, Filter, Leaf, Car, Bus, Bike, Footprints, Building, House, Users } from 'lucide-react';
 
 const profileOptions: { value: UserProfile; label: string; icon: LucideIconComponent; description: string }[] = [
-  { value: 'commuter', label: 'Daily Commuter', icon: iconMap.briefcase, description: 'Travel to work regularly, exposed to traffic pollution' },
-  { value: 'family', label: 'Family with Children', icon: iconMap.users, description: 'Concerned about long-term health impacts on kids' },
-  { value: 'elderly', label: 'Older Adult', icon: iconMap.elderly, description: 'Higher sensitivity to air pollution, reduced lung function' },
-  { value: 'athlete', label: 'Active/Athlete', icon: iconMap.dumbbell, description: 'Exercise outdoors, need to optimize training around air quality' },
-  { value: 'remote-worker', label: 'Remote Worker', icon: iconMap.home, description: 'Work from home, can control indoor environment' },
-  { value: 'student', label: 'Student', icon: iconMap['graduation-cap'], description: 'Walk or take public transport, budget-conscious' },
+  { value: 'family', label: 'Family with Children', icon: iconMap.users, description: 'Safeguard children lung health & school commute' },
+  { value: 'commuter', label: 'Daily Commuter', icon: iconMap.briefcase, description: 'Exposed to roadside exhaust & traffic soot' },
+  { value: 'elderly', label: 'Older Adult', icon: iconMap.elderly, description: 'High sensitivity to morning smog inversions' },
+  { value: 'athlete', label: 'Active / Athlete', icon: iconMap.dumbbell, description: 'Optimize outdoor runs around solar mixing' },
+  { value: 'remote-worker', label: 'Remote Worker', icon: iconMap.home, description: 'Optimize indoor microclimate & clean hours' },
+  { value: 'student', label: 'Student', icon: iconMap['graduation-cap'], description: 'Budget-friendly DIY boxes & campus shuttles' },
 ];
 
 const transportOptions = [
-  { value: 'car', label: 'Car', icon: iconMap.car },
-  { value: 'public', label: 'Public Transit', icon: iconMap.bus },
-  { value: 'bike', label: 'Bicycle', icon: iconMap.bike },
-  { value: 'walk', label: 'Walk', icon: iconMap.walk },
-  { value: 'mixed', label: 'Mixed', icon: iconMap.car },
+  { value: 'car', label: 'Solo Car', icon: Car },
+  { value: 'public', label: 'Metro / Transit', icon: Bus },
+  { value: 'bike', label: 'Bicycle / EV', icon: Bike },
+  { value: 'walk', label: 'Walking', icon: Footprints },
 ];
 
 const homeTypeOptions = [
-  { value: 'apartment', label: 'Apartment', icon: iconMap.apartment },
-  { value: 'house', label: 'House', icon: iconMap.house },
-  { value: 'shared', label: 'Shared Housing', icon: iconMap.users },
+  { value: 'apartment', label: 'Apartment', icon: Building },
+  { value: 'house', label: 'Independent House', icon: House },
+  { value: 'shared', label: 'Shared / Hostel', icon: Users },
 ];
 
 interface UserProfileFormProps {
   initialContext?: Partial<UserContext>;
   onSubmit: (context: UserContext) => void;
   onSkip?: () => void;
+  onClose?: () => void;
 }
 
-export function UserProfileForm({ initialContext, onSubmit, onSkip }: UserProfileFormProps) {
-  const CheckCircleIcon = iconMap['check-circle'];
-  const [profile, setProfile] = useState<UserProfile>(initialContext?.profile || 'commuter');
-  const [location, setLocation] = useState(initialContext?.location || '');
+export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: UserProfileFormProps) {
+  const [profile, setProfile] = useState<UserProfile>(initialContext?.profile || 'family');
+  const [location, setLocation] = useState(initialContext?.location || 'Delhi');
   const [preferences, setPreferences] = useState<UserPreferences>({
-    hasChildren: initialContext?.preferences?.hasChildren || false,
-    hasElderly: initialContext?.preferences?.hasElderly || false,
-    hasRespiratoryIssues: initialContext?.preferences?.hasRespiratoryIssues || false,
-    hasPets: initialContext?.preferences?.hasPets || false,
+    hasChildren: initialContext?.preferences?.hasChildren ?? true,
+    hasElderly: initialContext?.preferences?.hasElderly ?? false,
+    hasRespiratoryIssues: initialContext?.preferences?.hasRespiratoryIssues ?? false,
+    hasPets: initialContext?.preferences?.hasPets ?? true,
     commuteDistance: initialContext?.preferences?.commuteDistance || 'medium',
     transportMode: initialContext?.preferences?.transportMode || 'car',
     homeType: initialContext?.preferences?.homeType || 'apartment',
-    hasAirPurifier: initialContext?.preferences?.hasAirPurifier || false,
-    hasPlants: initialContext?.preferences?.hasPlants || false,
+    hasAirPurifier: initialContext?.preferences?.hasAirPurifier ?? true,
+    hasPlants: initialContext?.preferences?.hasPlants ?? true,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       profile,
-      location,
+      location: location.trim() || 'Delhi',
       preferences,
     });
   };
 
   const healthOptions = [
-    { key: 'hasChildren' as const, label: 'Has Children', icon: iconMap.baby },
-    { key: 'hasElderly' as const, label: 'Has Elderly', icon: iconMap.elderly },
-    { key: 'hasRespiratoryIssues' as const, label: 'Respiratory Issues', icon: iconMap.heart },
-    { key: 'hasPets' as const, label: 'Has Pets', icon: iconMap.shield },
-  ];
-
-  const airQualityOptions = [
-    { key: 'hasAirPurifier' as const, label: 'Air Purifier', icon: iconMap.filter },
-    { key: 'hasPlants' as const, label: 'Indoor Plants', icon: iconMap.leaf },
+    { key: 'hasChildren' as const, label: 'Children at Home', icon: Baby, desc: 'Prioritize pediatric lung safety' },
+    { key: 'hasElderly' as const, label: 'Elderly Members', icon: UserRound, desc: 'Cardiovascular sensitivity' },
+    { key: 'hasRespiratoryIssues' as const, label: 'Asthma / Respiratory', icon: Heart, desc: 'High vulnerability to PM2.5' },
+    { key: 'hasPets' as const, label: 'Domestic Pets', icon: Shield, desc: 'Filter out pet-toxic houseplants' },
   ];
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Personalize Your Experience</h1>
-        <p className="text-gray-600 mt-2">
-          Help us provide tailored recommendations based on your lifestyle and needs
-        </p>
+    <div className="flex flex-col h-full max-h-[85vh] bg-white rounded-3xl overflow-hidden shadow-2xl">
+      {/* Sticky Header */}
+      <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-500/40 flex items-center justify-center text-blue-400">
+            <Sliders className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">Personalize Air Quality Guidance</h2>
+            <p className="text-xs text-slate-400">Tailors AI routines, pet-safe plant hacks, and smog inversion timings.</p>
+          </div>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Your Profile</label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {/* Scrollable Form Body */}
+      <form id="profile-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
+        {/* 1. Profile Persona Selection */}
+        <div className="space-y-2.5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            1. Select Your Lifestyle Profile
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {profileOptions.map((option) => {
               const IconComponent = option.icon;
+              const isSelected = profile === option.value;
               return (
                 <button
                   type="button"
                   key={option.value}
                   onClick={() => setProfile(option.value)}
-                  className={`relative p-4 rounded-xl border-2 transition-all ${
-                    profile === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                  className={`p-3 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-blue-600 bg-blue-50/70 text-blue-950 ring-2 ring-blue-500/30'
+                      : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <IconComponent className={`w-5 h-5 ${profile === option.value ? 'text-blue-600' : 'text-gray-400'}`} />
-                    <span className="font-medium text-gray-900">{option.label}</span>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <IconComponent className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
+                      <span className="font-bold text-xs">{option.label}</span>
+                    </div>
+                    {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
                   </div>
-                  <p className="text-xs text-gray-500">{option.description}</p>
-                  {profile === option.value && (
-                    <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-blue-600 bg-blue-100 rounded-full" />
-                  )}
+                  <p className="text-[11px] text-slate-500 leading-snug">{option.description}</p>
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Your City</label>
+        {/* 2. Target City */}
+        <div className="space-y-2">
+          <label htmlFor="city-input" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            2. Your City / Region
+          </label>
           <input
+            id="city-input"
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g., Delhi, Mumbai, Bangalore"
-            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="e.g. Delhi, Mumbai, Bengaluru, New York, London"
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
             required
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Health & Household</label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {healthOptions.map(({ key, label, icon }) => {
-              const IconComponent = icon;
+        {/* 3. Health & Vulnerabilities */}
+        <div className="space-y-2.5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            3. Household Health & Sensitivities
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {healthOptions.map(({ key, label, icon: IconComponent, desc }) => {
+              const isChecked = preferences[key];
               return (
-                <label key={key} className="flex items-center gap-2 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                <label 
+                  key={key} 
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${
+                    isChecked 
+                      ? 'border-blue-500 bg-blue-50/50' 
+                      : 'border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
                   <input
                     type="checkbox"
-                    checked={preferences[key]}
+                    checked={isChecked}
                     onChange={(e) => setPreferences({ ...preferences, [key]: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    className="w-4 h-4 mt-0.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 accent-blue-600 cursor-pointer"
                   />
-                  <IconComponent className="w-5 h-5 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <IconComponent className="w-3.5 h-3.5 text-slate-500" />
+                      {label}
+                    </span>
+                    <span className="text-[11px] text-slate-500 block leading-tight">{desc}</span>
+                  </div>
                 </label>
               );
             })}
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Commute Distance</label>
-          <div className="flex gap-3">
-            {(['short', 'medium', 'long'] as const).map((distance) => (
-              <button
-                type="button"
-                key={distance}
-                onClick={() => setPreferences({ ...preferences, commuteDistance: distance })}
-                className={`flex-1 px-4 py-3 rounded-xl border-2 font-medium transition-all ${
-                  preferences.commuteDistance === distance
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {distance.charAt(0).toUpperCase() + distance.slice(1)} ({distance === 'short' ? '< 5 km' : distance === 'medium' ? '5-20 km' : '> 20 km'})
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Primary Transport</label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {transportOptions.map((option) => {
-              const IconComponent = option.icon;
-              return (
+        {/* 4. Commute & Transit Mode */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              4. Daily Commute Distance
+            </label>
+            <div className="flex gap-2">
+              {(['short', 'medium', 'long'] as const).map((d) => (
                 <button
                   type="button"
-                  key={option.value}
-                  onClick={() => setPreferences({ ...preferences, transportMode: option.value as UserPreferences['transportMode'] })}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                    preferences.transportMode === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                  key={d}
+                  onClick={() => setPreferences({ ...preferences, commuteDistance: d })}
+                  className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold border transition ${
+                    preferences.commuteDistance === d
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  <IconComponent className={`w-5 h-5 ${preferences.transportMode === option.value ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <span className="font-medium text-gray-700">{option.label}</span>
+                  {d === 'short' ? '< 5 km' : d === 'medium' ? '5–20 km' : '> 20 km'}
                 </button>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              5. Primary Transport Mode
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {transportOptions.map((opt) => {
+                const IconComponent = opt.icon;
+                const isSelected = preferences.transportMode === opt.value;
+                return (
+                  <button
+                    type="button"
+                    key={opt.value}
+                    onClick={() => setPreferences({ ...preferences, transportMode: opt.value as UserPreferences['transportMode'] })}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50 text-blue-900'
+                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <IconComponent className={`w-3.5 h-3.5 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
+                    <span className="truncate">{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Home Type</label>
-          <div className="grid grid-cols-3 gap-3">
-            {homeTypeOptions.map((option) => {
-              const IconComponent = option.icon;
-              return (
+        {/* 5. Housing & Measures */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              6. Housing Structure
+            </label>
+            <div className="flex gap-2">
+              {homeTypeOptions.map((opt) => (
                 <button
                   type="button"
-                  key={option.value}
-                  onClick={() => setPreferences({ ...preferences, homeType: option.value as UserPreferences['homeType'] })}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                    preferences.homeType === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                  key={opt.value}
+                  onClick={() => setPreferences({ ...preferences, homeType: opt.value as UserPreferences['homeType'] })}
+                  className={`flex-1 py-2 px-1 text-center rounded-xl text-xs font-semibold border transition ${
+                    preferences.homeType === opt.value
+                      ? 'border-blue-600 bg-blue-50 text-blue-900'
+                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  <IconComponent className={`w-6 h-6 ${preferences.homeType === option.value ? 'text-blue-600' : 'text-gray-400'}`} />
-                  <span className="font-medium text-gray-700">{option.label}</span>
+                  {opt.label}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-4">Current Air Quality Measures</label>
-          <div className="grid grid-cols-2 gap-3">
-            {airQualityOptions.map(({ key, label, icon }) => {
-              const IconComponent = icon;
-              return (
-                <label key={key} className="flex items-center gap-2 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preferences[key]}
-                    onChange={(e) => setPreferences({ ...preferences, [key]: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
-                  />
-                  <IconComponent className="w-5 h-5 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
-                </label>
-              );
-            })}
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              7. Current Indoor Measures
+            </label>
+            <div className="flex gap-2">
+              <label className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
+                preferences.hasAirPurifier ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-slate-200 text-slate-600'
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={preferences.hasAirPurifier}
+                  onChange={(e) => setPreferences({ ...preferences, hasAirPurifier: e.target.checked })}
+                  className="w-3.5 h-3.5 text-emerald-600 accent-emerald-600 rounded"
+                />
+                <Filter className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Air Purifier</span>
+              </label>
+
+              <label className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
+                preferences.hasPlants ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-slate-200 text-slate-600'
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={preferences.hasPlants}
+                  onChange={(e) => setPreferences({ ...preferences, hasPlants: e.target.checked })}
+                  className="w-3.5 h-3.5 text-emerald-600 accent-emerald-600 rounded"
+                />
+                <Leaf className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Indoor Plants</span>
+              </label>
+            </div>
           </div>
-        </div>
-
-        <div className="flex gap-4 pt-4">
-          <button
-            type="submit"
-            className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
-          >
-            Get Personalized Recommendations
-          </button>
-          {onSkip && (
-            <button
-              type="button"
-              onClick={onSkip}
-              className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              Skip for Now
-            </button>
-          )}
         </div>
       </form>
+
+      {/* Sticky Bottom Footer */}
+      <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3 flex-shrink-0">
+        {onSkip && (
+          <button
+            type="button"
+            onClick={onSkip}
+            className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-200 transition"
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          form="profile-form"
+          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/25 transition"
+        >
+          Save & Apply Recommendations
+        </button>
+      </div>
     </div>
   );
 }

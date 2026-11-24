@@ -28,7 +28,6 @@ import {
   Home, 
   GraduationCap, 
   ShieldCheck, 
-  X,
   ExternalLink,
   Sliders,
   CheckCircle2
@@ -510,22 +509,16 @@ export default function HomePage() {
       {/* Profile Customization Modal */}
       {showProfileModal && (
         <div 
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl p-6 sm:p-8 border border-slate-200 relative">
-            <button
-              onClick={() => setShowProfileModal(false)}
-              className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
-              aria-label="Close profile modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="w-full max-w-2xl">
             <UserProfileForm
               initialContext={userContext}
               onSubmit={handleProfileSubmit}
               onSkip={() => setShowProfileModal(false)}
+              onClose={() => setShowProfileModal(false)}
             />
           </div>
         </div>
