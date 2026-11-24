@@ -135,8 +135,9 @@ export async function generateRecommendations(
   }
 
   try {
+    const modelName = process.env.GEMINI_MODEL?.trim() || 'gemini-1.5-flash';
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
+      model: modelName,
       generationConfig: {
         responseMimeType: 'application/json',
       }
