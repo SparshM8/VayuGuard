@@ -7,6 +7,7 @@ import {
   IndoorAirQualityHack, 
   SustainableAlternative, 
   UserProfile, 
+  UserPreferences,
   AQICategory 
 } from '@/types';
 
@@ -31,10 +32,23 @@ const CATEGORY_GUIDANCE: Record<AQICategory, string> = {
   'Hazardous': 'Emergency smog conditions: Atmospheric inversion trapping hazardous particulates. Stay strictly indoors, seal entryways, operate continuous HEPA filtration, and avoid all combustion.',
 };
 
+const DEFAULT_PREFERENCES: UserPreferences = {
+  hasChildren: false,
+  hasElderly: false,
+  hasRespiratoryIssues: false,
+  hasPets: false,
+  commuteDistance: 'medium',
+  transportMode: 'car',
+  homeType: 'apartment',
+  hasAirPurifier: false,
+  hasPlants: false,
+};
+
 function buildPrompt(aqiData: AQIData, userContext: UserContext): string {
-  const { profile, preferences } = userContext;
+  const profile = userContext?.profile || 'commuter';
+  const preferences = { ...DEFAULT_PREFERENCES, ...(userContext?.preferences || {}) };
   const profileDesc = PROFILE_CONTEXTS[profile] || PROFILE_CONTEXTS.commuter;
-  const categoryGuidance = CATEGORY_GUIDANCE[aqiData.category];
+  const categoryGuidance = CATEGORY_GUIDANCE[aqiData.category] || CATEGORY_GUIDANCE['Moderate'];
 
   const contextDetails = [
     preferences.hasChildren && 'Has young children at home (high priority for respiratory protection)',
@@ -173,7 +187,8 @@ export function getFallbackRecommendations(
   aqiData: AQIData, 
   userContext: UserContext
 ): RecommendationResponse {
-  const { profile, preferences } = userContext;
+  const profile = userContext?.profile || 'commuter';
+  const preferences = { ...DEFAULT_PREFERENCES, ...(userContext?.preferences || {}) };
   const aqi = aqiData.aqi;
   const isSevere = aqi >= 200;
   const isModerateOrHigh = aqi > 100;
