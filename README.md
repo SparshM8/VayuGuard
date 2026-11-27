@@ -5,7 +5,7 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-VayuGuard_AI-blue?style=for-the-badge&logo=vercel)](https://vayu-guard-ten.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-SparshM8%2FVayuGuard-black?style=for-the-badge&logo=github)](https://github.com/SparshM8/VayuGuard)
 [![Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/GrbySw0j4k8)
-[![Tests Passing](https://img.shields.io/badge/Tests-13%2F13_Passing-emerald?style=for-the-badge)](https://github.com/SparshM8/VayuGuard)
+[![Tests Passing](https://img.shields.io/badge/Tests-17%2F17_Passing-emerald?style=for-the-badge)](https://github.com/SparshM8/VayuGuard)
 [![LinkedIn Post](https://img.shields.io/badge/LinkedIn-Announcement_Post-0A66C2?style=for-the-badge&logo=linkedin)](https://lnkd.in/p/gTSBfdGX)
 
 - 🌐 **Live Deployed App**: [https://vayu-guard-ten.vercel.app/](https://vayu-guard-ten.vercel.app/)
@@ -77,12 +77,14 @@ urban-air-quality-assistant/
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── aqidata/route.ts          # Real-time AQI & Geocoding endpoint
-│   │   │   └── recommendations/route.ts  # Gemini AI recommendation generator
+│   │   │   └── recommendations/route.ts  # Zod-validated Gemini recommendation endpoint
 │   │   ├── layout.tsx                    # Next.js root layout with preconnect tags
-│   │   ├── page.tsx                      # Main interactive application page
+│   │   ├── page.tsx                      # Composed application shell & state orchestration
 │   │   └── globals.css                   # Tailwind CSS design tokens
 │   ├── components/
-│   │   ├── AQIDashboard.tsx              # Main AQI card, source attribution & pollutants
+│   │   ├── Header.tsx                    # Sticky brand bar, city search & GPS trigger
+│   │   ├── PersonaSwitcher.tsx           # Instant vulnerability & lifestyle persona bar
+│   │   ├── AQIDashboard.tsx              # Main AQI card, source attribution & WHO limits
 │   │   ├── HourlyForecast.tsx            # 24-hour horizontal forecast timeline
 │   │   ├── ImpactCalculator.tsx          # Interactive What-If impact simulator
 │   │   ├── SmogAlertBanner.tsx           # Emergency winter smog advisory banner
@@ -91,17 +93,24 @@ urban-air-quality-assistant/
 │   │   ├── RoutineSuggestions.tsx        # Daily low-emission routines
 │   │   ├── IndoorAirQuality.tsx          # Evidence-backed indoor air hacks
 │   │   ├── SustainableAlternatives.tsx   # Justified sustainable alternatives
-│   │   └── UserProfileForm.tsx           # Persona & health preference modal
+│   │   ├── UserProfileForm.tsx           # Persona & health preference modal
+│   │   └── Footer.tsx                    # Live telemetry & methodology attribution
 │   ├── hooks/
-│   │   └── useAQIData.ts                 # React hooks for API state & city search
+│   │   └── useAQIData.ts                 # AbortController-hardened hooks & debounced search
 │   ├── lib/
-│   │   ├── aqidata.ts                    # Geocoding, EPA AQI breakpoints, Open-Meteo & OpenAQ
-│   │   ├── recommendations.ts            # Gemini 1.5 Flash prompt engine & rule fallback
-│   │   └── icons.ts                      # Accessible Lucide icon mappings
+│   │   ├── aqiMath.ts                    # Pure US-EPA breakpoint & window calculations
+│   │   ├── aqidata.ts                    # Open-Meteo geocoding & telemetry fetcher
+│   │   ├── constants.ts                  # Shared AQI themes, WHO limits & persona metadata
+│   │   ├── fallbackRecommendations.ts    # Context-aware offline rule recommendation engine
+│   │   ├── impactCalculator.ts           # Pure CO₂, PM2.5 & financial impact model
+│   │   ├── icons.ts                      # Curated Lucide icon registry & badge styles
+│   │   ├── recommendations.ts            # Gemini prompt orchestration & Zod validation
+│   │   └── validation.ts                 # Runtime Zod schemas for API & AI payloads
 │   └── types/
 │       └── index.ts                      # TypeScript schemas & API interfaces
 └── tests/
     ├── aqi-calculation.test.ts           # EPA breakpoints & category unit tests
+    ├── impact-calculator.test.ts         # Impact model, schema & icon unit tests
     ├── recommendations.test.ts           # Persona logic & smog alert tests
     └── geocoding-and-data.test.ts        # Live telemetry & autocomplete tests
 ```

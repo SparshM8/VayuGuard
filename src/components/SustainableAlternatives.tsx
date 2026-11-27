@@ -1,18 +1,19 @@
 'use client';
 
 import { SustainableAlternative } from '@/types';
-import { iconMap, categoryIcons, categoryLabels, difficultyColors } from '@/lib/icons';
-import { Heart, ArrowRight } from 'lucide-react';
+import { categoryIcons, categoryLabels, difficultyColors, iconMap } from '@/lib/icons';
+import { ArrowRight, Heart } from 'lucide-react';
 
 interface SustainableAlternativesProps {
   alternatives: SustainableAlternative[];
 }
 
+/** Displays actionable sustainable alternatives alongside quantified CO₂, health, and cost justifications. */
 export function SustainableAlternatives({ alternatives }: SustainableAlternativesProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Sustainable Alternatives & Impact</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Sustainable Alternatives &amp; Impact</h2>
         <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
           {alternatives.length} alternatives
         </span>
@@ -30,7 +31,7 @@ export function SustainableAlternatives({ alternatives }: SustainableAlternative
 function AlternativeCard({ alternative }: { alternative: SustainableAlternative }) {
   const Icon = iconMap[alternative.icon] || Heart;
   const CategoryIcon = categoryIcons[alternative.category] || Heart;
-  
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
       <div className="flex gap-4">
@@ -43,7 +44,9 @@ function AlternativeCard({ alternative }: { alternative: SustainableAlternative 
               <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
                 <CategoryIcon className="w-4 h-4" />
                 <span>{categoryLabels[alternative.category]}</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${difficultyColors[alternative.difficulty]}`}>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${difficultyColors[alternative.difficulty]}`}
+                >
                   {alternative.difficulty}
                 </span>
               </div>
@@ -54,9 +57,9 @@ function AlternativeCard({ alternative }: { alternative: SustainableAlternative 
             </div>
             <ArrowRight className="w-8 h-8 text-gray-300 flex-shrink-0 mt-1" />
           </div>
-          
+
           <p className="mt-3 text-gray-600 text-sm">{alternative.explanation}</p>
-          
+
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div className="bg-green-50 rounded-lg p-3">
               <p className="font-medium text-green-800">CO₂ Reduction</p>

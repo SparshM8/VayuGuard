@@ -32,9 +32,6 @@ export const metadata: Metadata = {
     title: "VayuGuard AI",
     description: "GenAI-powered assistant for navigating urban air pollution with personalized guidance.",
   },
-  verification: {
-    google: "google-site-verification",
-  },
 };
 
 export const viewport: Viewport = {

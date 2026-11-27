@@ -1,17 +1,19 @@
 'use client';
 
 import { RoutineSuggestion } from '@/types';
-import { iconMap, categoryIcons, impactColors, difficultyColors } from '@/lib/icons';
-import { Leaf, Heart } from 'lucide-react';
+import { categoryIcons, difficultyColors, iconMap, impactColors } from '@/lib/icons';
+import { Clock, Heart, Leaf } from 'lucide-react';
 
 interface RoutineSuggestionsProps {
   routines: RoutineSuggestion[];
 }
 
+const CATEGORY_ORDER: RoutineSuggestion['category'][] = ['commute', 'activity', 'lifestyle', 'indoor'];
+
+/** Groups and displays personalized low-emission daily routine recommendations. */
 export function RoutineSuggestions({ routines }: RoutineSuggestionsProps) {
-  const categoryOrder = ['commute', 'activity', 'lifestyle', 'indoor'];
-  const sortedRoutines = [...routines].sort((a, b) => 
-    categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
+  const sortedRoutines = [...routines].sort(
+    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category)
   );
 
   return (
@@ -24,12 +26,12 @@ export function RoutineSuggestions({ routines }: RoutineSuggestionsProps) {
       </div>
 
       <div className="space-y-4">
-        {categoryOrder.map(category => {
-          const categoryRoutines = sortedRoutines.filter(r => r.category === category);
+        {CATEGORY_ORDER.map((category) => {
+          const categoryRoutines = sortedRoutines.filter((r) => r.category === category);
           if (categoryRoutines.length === 0) return null;
-          
+
           const CategoryIcon = categoryIcons[category] || Heart;
-          
+
           return (
             <div key={category} className="space-y-3">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
@@ -51,7 +53,7 @@ export function RoutineSuggestions({ routines }: RoutineSuggestionsProps) {
 
 function RoutineCard({ routine }: { routine: RoutineSuggestion }) {
   const Icon = iconMap[routine.icon] || Heart;
-  
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
       <div className="flex gap-4">
@@ -68,23 +70,25 @@ function RoutineCard({ routine }: { routine: RoutineSuggestion }) {
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${impactColors[routine.impact]}`}>
                 {routine.impact.charAt(0).toUpperCase() + routine.impact.slice(1)} Impact
               </span>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyColors[routine.difficulty]}`}>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyColors[routine.difficulty]}`}
+              >
                 {routine.difficulty.charAt(0).toUpperCase() + routine.difficulty.slice(1)}
               </span>
             </div>
           </div>
-          
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div className="flex items-center gap-2 text-gray-600">
-              <Icon className="w-4 h-4" />
+              <Clock className="w-4 h-4 flex-shrink-0 text-blue-500" />
               <span>{routine.estimatedTime}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
-              <Leaf className="w-4 h-4" />
+              <Leaf className="w-4 h-4 flex-shrink-0 text-emerald-600" />
               <span>{routine.emissionReduction}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
-              <Heart className="w-4 h-4" />
+              <Heart className="w-4 h-4 flex-shrink-0 text-rose-500" />
               <span>{routine.healthBenefit}</span>
             </div>
           </div>

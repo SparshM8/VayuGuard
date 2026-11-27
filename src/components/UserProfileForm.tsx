@@ -1,33 +1,50 @@
 'use client';
 
 import { useState } from 'react';
-import { UserProfile, UserPreferences, UserContext } from '@/types';
-import { 
-  iconMap,
-  LucideIconComponent,
-} from '@/lib/icons';
-import { X, CheckCircle2, Sliders, Shield, Heart, Baby, UserRound, Filter, Leaf, Car, Bus, Bike, Footprints, Building, House, Users } from 'lucide-react';
+import { UserContext, UserPreferences, UserProfile } from '@/types';
+import { DEFAULT_CITY, DEFAULT_USER_PREFERENCES, PROFILE_OPTIONS } from '@/lib/constants';
+import {
+  Baby,
+  Bike,
+  Building,
+  Bus,
+  Car,
+  CheckCircle2,
+  Filter,
+  Footprints,
+  Heart,
+  House,
+  Leaf,
+  Shield,
+  Sliders,
+  UserRound,
+  Users,
+  X,
+} from 'lucide-react';
 
-const profileOptions: { value: UserProfile; label: string; icon: LucideIconComponent; description: string }[] = [
-  { value: 'family', label: 'Family with Children', icon: iconMap.users, description: 'Safeguard children lung health & school commute' },
-  { value: 'commuter', label: 'Daily Commuter', icon: iconMap.briefcase, description: 'Exposed to roadside exhaust & traffic soot' },
-  { value: 'elderly', label: 'Older Adult', icon: iconMap.elderly, description: 'High sensitivity to morning smog inversions' },
-  { value: 'athlete', label: 'Active / Athlete', icon: iconMap.dumbbell, description: 'Optimize outdoor runs around solar mixing' },
-  { value: 'remote-worker', label: 'Remote Worker', icon: iconMap.home, description: 'Optimize indoor microclimate & clean hours' },
-  { value: 'student', label: 'Student', icon: iconMap['graduation-cap'], description: 'Budget-friendly DIY boxes & campus shuttles' },
-];
-
-const transportOptions = [
+const TRANSPORT_OPTIONS = [
   { value: 'car', label: 'Solo Car', icon: Car },
   { value: 'public', label: 'Metro / Transit', icon: Bus },
   { value: 'bike', label: 'Bicycle / EV', icon: Bike },
   { value: 'walk', label: 'Walking', icon: Footprints },
-];
+] as const;
 
-const homeTypeOptions = [
+const HOME_TYPE_OPTIONS = [
   { value: 'apartment', label: 'Apartment', icon: Building },
   { value: 'house', label: 'Independent House', icon: House },
   { value: 'shared', label: 'Shared / Hostel', icon: Users },
+] as const;
+
+const HEALTH_OPTIONS = [
+  { key: 'hasChildren' as const, label: 'Children at Home', icon: Baby, desc: 'Prioritize pediatric lung safety' },
+  { key: 'hasElderly' as const, label: 'Elderly Members', icon: UserRound, desc: 'Cardiovascular sensitivity' },
+  {
+    key: 'hasRespiratoryIssues' as const,
+    label: 'Asthma / Respiratory',
+    icon: Heart,
+    desc: 'High vulnerability to PM2.5',
+  },
+  { key: 'hasPets' as const, label: 'Domestic Pets', icon: Shield, desc: 'Filter out pet-toxic houseplants' },
 ];
 
 interface UserProfileFormProps {
@@ -37,40 +54,26 @@ interface UserProfileFormProps {
   onClose?: () => void;
 }
 
+/** Modal form allowing granular configuration of household health factors, transport, and home equipment. */
 export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: UserProfileFormProps) {
   const [profile, setProfile] = useState<UserProfile>(initialContext?.profile || 'family');
-  const [location, setLocation] = useState(initialContext?.location || 'Delhi');
+  const [location, setLocation] = useState(initialContext?.location || DEFAULT_CITY);
   const [preferences, setPreferences] = useState<UserPreferences>({
-    hasChildren: initialContext?.preferences?.hasChildren ?? true,
-    hasElderly: initialContext?.preferences?.hasElderly ?? false,
-    hasRespiratoryIssues: initialContext?.preferences?.hasRespiratoryIssues ?? false,
-    hasPets: initialContext?.preferences?.hasPets ?? true,
-    commuteDistance: initialContext?.preferences?.commuteDistance || 'medium',
-    transportMode: initialContext?.preferences?.transportMode || 'car',
-    homeType: initialContext?.preferences?.homeType || 'apartment',
-    hasAirPurifier: initialContext?.preferences?.hasAirPurifier ?? true,
-    hasPlants: initialContext?.preferences?.hasPlants ?? true,
+    ...DEFAULT_USER_PREFERENCES,
+    ...(initialContext?.preferences || {}),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       profile,
-      location: location.trim() || 'Delhi',
+      location: location.trim() || DEFAULT_CITY,
       preferences,
     });
   };
 
-  const healthOptions = [
-    { key: 'hasChildren' as const, label: 'Children at Home', icon: Baby, desc: 'Prioritize pediatric lung safety' },
-    { key: 'hasElderly' as const, label: 'Elderly Members', icon: UserRound, desc: 'Cardiovascular sensitivity' },
-    { key: 'hasRespiratoryIssues' as const, label: 'Asthma / Respiratory', icon: Heart, desc: 'High vulnerability to PM2.5' },
-    { key: 'hasPets' as const, label: 'Domestic Pets', icon: Shield, desc: 'Filter out pet-toxic houseplants' },
-  ];
-
   return (
     <div className="flex flex-col h-full max-h-[85vh] bg-white rounded-3xl overflow-hidden shadow-2xl">
-      {/* Sticky Header */}
       <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-500/40 flex items-center justify-center text-blue-400">
@@ -78,7 +81,9 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
           </div>
           <div>
             <h2 className="text-lg font-bold tracking-tight">Personalize Air Quality Guidance</h2>
-            <p className="text-xs text-slate-400">Tailors AI routines, pet-safe plant hacks, and smog inversion timings.</p>
+            <p className="text-xs text-slate-400">
+              Tailors AI routines, pet-safe plant hacks, and smog inversion timings.
+            </p>
           </div>
         </div>
         {onClose && (
@@ -93,15 +98,17 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
         )}
       </div>
 
-      {/* Scrollable Form Body */}
-      <form id="profile-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-200">
-        {/* 1. Profile Persona Selection */}
+      <form
+        id="profile-form"
+        onSubmit={handleSubmit}
+        className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-200"
+      >
         <div className="space-y-2.5">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
             1. Select Your Lifestyle Profile
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-            {profileOptions.map((option) => {
+            {PROFILE_OPTIONS.map((option) => {
               const IconComponent = option.icon;
               const isSelected = profile === option.value;
               return (
@@ -122,14 +129,13 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
                     </div>
                     {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-snug">{option.description}</p>
+                  <p className="text-[11px] text-slate-500 leading-snug">{option.formDesc}</p>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* 2. Target City */}
         <div className="space-y-2">
           <label htmlFor="city-input" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
             2. Your City / Region
@@ -145,21 +151,18 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
           />
         </div>
 
-        {/* 3. Health & Vulnerabilities */}
         <div className="space-y-2.5">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
-            3. Household Health & Sensitivities
+            3. Household Health &amp; Sensitivities
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {healthOptions.map(({ key, label, icon: IconComponent, desc }) => {
+            {HEALTH_OPTIONS.map(({ key, label, icon: IconComponent, desc }) => {
               const isChecked = preferences[key];
               return (
-                <label 
-                  key={key} 
+                <label
+                  key={key}
                   className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${
-                    isChecked 
-                      ? 'border-blue-500 bg-blue-50/50' 
-                      : 'border-slate-200 hover:bg-slate-50'
+                    isChecked ? 'border-blue-500 bg-blue-50/50' : 'border-slate-200 hover:bg-slate-50'
                   }`}
                 >
                   <input
@@ -181,25 +184,24 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
           </div>
         </div>
 
-        {/* 4. Commute & Transit Mode */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
               4. Daily Commute Distance
             </label>
             <div className="flex gap-2">
-              {(['short', 'medium', 'long'] as const).map((d) => (
+              {(['short', 'medium', 'long'] as const).map((distance) => (
                 <button
                   type="button"
-                  key={d}
-                  onClick={() => setPreferences({ ...preferences, commuteDistance: d })}
+                  key={distance}
+                  onClick={() => setPreferences({ ...preferences, commuteDistance: distance })}
                   className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold border transition ${
-                    preferences.commuteDistance === d
+                    preferences.commuteDistance === distance
                       ? 'border-blue-600 bg-blue-600 text-white'
                       : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  {d === 'short' ? '< 5 km' : d === 'medium' ? '5–20 km' : '> 20 km'}
+                  {distance === 'short' ? '< 5 km' : distance === 'medium' ? '5–20 km' : '> 20 km'}
                 </button>
               ))}
             </div>
@@ -210,14 +212,14 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
               5. Primary Transport Mode
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {transportOptions.map((opt) => {
+              {TRANSPORT_OPTIONS.map((opt) => {
                 const IconComponent = opt.icon;
                 const isSelected = preferences.transportMode === opt.value;
                 return (
                   <button
                     type="button"
                     key={opt.value}
-                    onClick={() => setPreferences({ ...preferences, transportMode: opt.value as UserPreferences['transportMode'] })}
+                    onClick={() => setPreferences({ ...preferences, transportMode: opt.value })}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50 text-blue-900'
@@ -233,18 +235,17 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
           </div>
         </div>
 
-        {/* 5. Housing & Measures */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
               6. Housing Structure
             </label>
             <div className="flex gap-2">
-              {homeTypeOptions.map((opt) => (
+              {HOME_TYPE_OPTIONS.map((opt) => (
                 <button
                   type="button"
                   key={opt.value}
-                  onClick={() => setPreferences({ ...preferences, homeType: opt.value as UserPreferences['homeType'] })}
+                  onClick={() => setPreferences({ ...preferences, homeType: opt.value })}
                   className={`flex-1 py-2 px-1 text-center rounded-xl text-xs font-semibold border transition ${
                     preferences.homeType === opt.value
                       ? 'border-blue-600 bg-blue-50 text-blue-900'
@@ -262,9 +263,13 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
               7. Current Indoor Measures
             </label>
             <div className="flex gap-2">
-              <label className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
-                preferences.hasAirPurifier ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-slate-200 text-slate-600'
-              }`}>
+              <label
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
+                  preferences.hasAirPurifier
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                    : 'border-slate-200 text-slate-600'
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={preferences.hasAirPurifier}
@@ -275,9 +280,13 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
                 <span>Air Purifier</span>
               </label>
 
-              <label className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
-                preferences.hasPlants ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-slate-200 text-slate-600'
-              }`}>
+              <label
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
+                  preferences.hasPlants
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                    : 'border-slate-200 text-slate-600'
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={preferences.hasPlants}
@@ -292,7 +301,6 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
         </div>
       </form>
 
-      {/* Sticky Bottom Footer */}
       <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-3 flex-shrink-0">
         {onSkip && (
           <button
@@ -308,7 +316,7 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
           form="profile-form"
           className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/25 transition"
         >
-          Save & Apply Recommendations
+          Save &amp; Apply Recommendations
         </button>
       </div>
     </div>

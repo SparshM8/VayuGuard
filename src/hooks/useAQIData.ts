@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AQIData, CitySearchResult, RecommendationResponse, UserContext } from '@/types';
 
 interface UseAQIDataReturn {
@@ -11,80 +11,79 @@ interface UseAQIDataReturn {
   fetchByCoords: (lat: number, lon: number, cityName?: string) => Promise<void>;
 }
 
-export function useAQIData(initialCity: string = 'Delhi', initialCountry: string = 'IN'): UseAQIDataReturn {
+/** Fetches and caches live AQI telemetry for a target city or GPS coordinates with request cancellation. */
+export function useAQIData(
+  initialCity: string = 'Delhi',
+  initialCountry: string = 'IN'
+): UseAQIDataReturn {
   const [data, setData] = useState<AQIData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchCityData = useCallback(async (c: string, cntry: string) => {
-    if (!c || c.trim().length === 0) return;
+  const executeFetch = useCallback(async (url: string, signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `/api/aqidata?city=${encodeURIComponent(c.trim())}&country=${encodeURIComponent(cntry.trim())}`
-      );
+      const response = await fetch(url, { signal });
       const result = await response.json();
-      if (!response.ok) {
+      if (!response.ok || result.error) {
         throw new Error(result.error || 'Failed to fetch air quality data');
       }
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while loading air quality data');
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setError(
+        err instanceof Error ? err.message : 'An error occurred while loading air quality data'
+      );
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
+  }, []);
+
+  const fetchCityUrl = useCallback((city: string, country: string) => {
+    return `/api/aqidata?city=${encodeURIComponent(city.trim())}&country=${encodeURIComponent(country.trim())}`;
   }, []);
 
   useEffect(() => {
-    let active = true;
-    fetch(`/api/aqidata?city=${encodeURIComponent(initialCity.trim())}&country=${encodeURIComponent(initialCountry.trim())}`)
-      .then(res => res.json())
-      .then(res => {
-        if (!active) return;
-        if (res.error) {
-          setError(res.error);
-        } else {
-          setData(res);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        if (!active) return;
-        setError(err instanceof Error ? err.message : 'An error occurred while loading air quality data');
-        setLoading(false);
-      });
+    if (!initialCity.trim()) return;
+    const controller = new AbortController();
+    abortRef.current?.abort();
+    abortRef.current = controller;
+
+    Promise.resolve().then(() => {
+      if (!controller.signal.aborted) {
+        void executeFetch(fetchCityUrl(initialCity, initialCountry), controller.signal);
+      }
+    });
 
     return () => {
-      active = false;
+      controller.abort();
     };
-  }, [initialCity, initialCountry]);
+  }, [initialCity, initialCountry, executeFetch, fetchCityUrl]);
 
-  const fetchByCoords = useCallback(async (lat: number, lon: number, cityName?: string) => {
-    setLoading(true);
-    setError(null);
-    try {
+  const refetch = useCallback(async () => {
+    if (!initialCity.trim()) return;
+    const controller = new AbortController();
+    abortRef.current?.abort();
+    abortRef.current = controller;
+    await executeFetch(fetchCityUrl(initialCity, initialCountry), controller.signal);
+  }, [initialCity, initialCountry, executeFetch, fetchCityUrl]);
+
+  const fetchByCoords = useCallback(
+    async (lat: number, lon: number, cityName?: string) => {
+      const controller = new AbortController();
+      abortRef.current?.abort();
+      abortRef.current = controller;
       const cityParam = cityName ? `&cityName=${encodeURIComponent(cityName)}` : '';
-      const response = await fetch(`/api/aqidata?lat=${lat}&lon=${lon}${cityParam}`);
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to fetch air quality data for location');
-      }
-      setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch GPS air quality data');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      await executeFetch(`/api/aqidata?lat=${lat}&lon=${lon}${cityParam}`, controller.signal);
+    },
+    [executeFetch]
+  );
 
-  return { 
-    data, 
-    loading, 
-    error, 
-    refetch: () => fetchCityData(initialCity, initialCountry),
-    fetchByCoords
-  };
+  return { data, loading, error, refetch, fetchByCoords };
 }
 
 interface UseRecommendationsReturn {
@@ -94,62 +93,108 @@ interface UseRecommendationsReturn {
   generate: (aqiData: AQIData, userContext: UserContext) => Promise<void>;
 }
 
+/** Generates context-aware GenAI guidance while cancelling superseded in-flight requests. */
 export function useRecommendations(): UseRecommendationsReturn {
   const [data, setData] = useState<RecommendationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const generate = useCallback(async (aqiData: AQIData, userContext: UserContext) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch('/api/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ aqiData, userContext }),
+        signal: controller.signal,
       });
-      
+
       const result = await response.json();
-      
       if (!response.ok) {
         throw new Error(result.error || 'Failed to generate recommendations');
       }
-      
+
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while generating recommendations');
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setError(
+        err instanceof Error ? err.message : 'An error occurred while generating recommendations'
+      );
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
+  }, []);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
   }, []);
 
   return { data, loading, error, generate };
 }
 
+/** Debounced global city autocomplete search hook with automatic request cancellation. */
 export function useCitySearch() {
   const [results, setResults] = useState<CitySearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const search = useCallback(async (query: string) => {
-    if (!query || query.trim().length < 2) {
+  const search = useCallback((query: string) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    abortRef.current?.abort();
+
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
       setResults([]);
+      setSearching(false);
       return;
     }
 
     setSearching(true);
-    try {
-      const res = await fetch(`/api/aqidata?action=search&q=${encodeURIComponent(query.trim())}`);
-      if (res.ok) {
-        const data = await res.json();
-        setResults(data.cities || []);
+    timerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      try {
+        const res = await fetch(`/api/aqidata?action=search&q=${encodeURIComponent(trimmed)}`, {
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data.cities || []);
+        }
+      } catch (err) {
+        if (!(err instanceof DOMException && err.name === 'AbortError')) {
+          console.error('Error during city autocomplete:', err);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setSearching(false);
+        }
       }
-    } catch (err) {
-      console.error('Error during city autocomplete:', err);
-    } finally {
-      setSearching(false);
-    }
+    }, 250);
   }, []);
 
-  return { results, searching, search, clear: () => setResults([]) };
+  const clear = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    abortRef.current?.abort();
+    setResults([]);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  return { results, searching, search, clear };
 }

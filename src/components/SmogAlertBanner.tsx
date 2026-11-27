@@ -1,19 +1,20 @@
 'use client';
 
-import { AQIData } from '@/types';
-import { ShieldAlert, Home, UserX, CheckCircle2, X } from 'lucide-react';
 import { useState } from 'react';
+import { AQIData } from '@/types';
+import { CheckCircle2, Home, ShieldAlert, UserX, X } from 'lucide-react';
 
 interface SmogAlertBannerProps {
   data: AQIData;
   onOpenDefensePlan?: () => void;
 }
 
+/** High-visibility urgent advisory displayed automatically when AQI reaches Unhealthy (150+) or worse. */
 export function SmogAlertBanner({ data, onOpenDefensePlan }: SmogAlertBannerProps) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissedLocation, setDismissedLocation] = useState<string | null>(null);
+  const locationKey = `${data.city}-${data.aqi}`;
 
-  // Show if AQI is Unhealthy or worse (>= 150)
-  if (dismissed || data.aqi < 150) return null;
+  if (dismissedLocation === locationKey || data.aqi < 150) return null;
 
   const isHazardous = data.aqi >= 300;
   const isVeryUnhealthy = data.aqi >= 200;
@@ -21,12 +22,12 @@ export function SmogAlertBanner({ data, onOpenDefensePlan }: SmogAlertBannerProp
   const bannerTheme = isHazardous
     ? 'bg-gradient-to-r from-red-950 via-rose-900 to-red-950 border-red-700 text-rose-100'
     : isVeryUnhealthy
-    ? 'bg-gradient-to-r from-purple-950 via-indigo-900 to-purple-950 border-purple-700 text-purple-100'
-    : 'bg-gradient-to-r from-orange-950 via-amber-900 to-orange-950 border-orange-700 text-orange-100';
+      ? 'bg-gradient-to-r from-purple-950 via-indigo-900 to-purple-950 border-purple-700 text-purple-100'
+      : 'bg-gradient-to-r from-orange-950 via-amber-900 to-orange-950 border-orange-700 text-orange-100';
 
   return (
-    <div 
-      role="alert" 
+    <div
+      role="alert"
       aria-live="assertive"
       className={`rounded-2xl border p-5 shadow-lg relative overflow-hidden transition-all ${bannerTheme}`}
     >
@@ -41,17 +42,19 @@ export function SmogAlertBanner({ data, onOpenDefensePlan }: SmogAlertBannerProp
                 Severe Winter Smog Advisory
               </span>
               <span className="text-sm font-semibold text-white/90">
-                AQI {data.aqi} • {data.category} in {data.city}
+                AQI {data.aqi} &bull; {data.category} in {data.city}
               </span>
             </div>
             <p className="text-sm text-white/80 max-w-3xl leading-relaxed">
-              Thermal ground inversion is trapping concentrated toxic particulates ({data.dominantPollutant || 'PM2.5'}). High risk of acute respiratory and ocular inflammation.
+              Thermal ground inversion is trapping concentrated toxic particulates (
+              {data.dominantPollutant || 'PM2.5'}). High risk of acute respiratory and ocular inflammation.
             </p>
           </div>
         </div>
 
         <button
-          onClick={() => setDismissed(true)}
+          type="button"
+          onClick={() => setDismissedLocation(locationKey)}
           className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
           aria-label="Dismiss smog alert"
         >
@@ -59,7 +62,6 @@ export function SmogAlertBanner({ data, onOpenDefensePlan }: SmogAlertBannerProp
         </button>
       </div>
 
-      {/* Quick Protocol Badges */}
       <div className="mt-4 pt-4 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
         <div className="bg-white/10 rounded-xl p-2.5 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-300 flex-shrink-0" />
@@ -67,16 +69,17 @@ export function SmogAlertBanner({ data, onOpenDefensePlan }: SmogAlertBannerProp
         </div>
         <div className="bg-white/10 rounded-xl p-2.5 flex items-center gap-2">
           <Home className="w-4 h-4 text-blue-300 flex-shrink-0" />
-          <span>Seal windows & run HEPA</span>
+          <span>Seal windows &amp; run HEPA</span>
         </div>
         <div className="bg-white/10 rounded-xl p-2.5 flex items-center gap-2">
           <UserX className="w-4 h-4 text-amber-300 flex-shrink-0" />
           <span>No early morning cardio</span>
         </div>
         <div className="bg-white/10 rounded-xl p-2.5 flex items-center justify-between">
-          <span className="font-semibold text-amber-200">Children & elderly indoors</span>
+          <span className="font-semibold text-amber-200">Children &amp; elderly indoors</span>
           {onOpenDefensePlan && (
             <button
+              type="button"
               onClick={onOpenDefensePlan}
               className="underline text-[11px] font-bold text-white hover:text-amber-200 ml-1"
             >
