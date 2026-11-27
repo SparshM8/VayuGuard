@@ -189,16 +189,17 @@ flowchart TD
 
 - **Security (Medium Impact)**:
   - API keys stored in server-side environment variables (`GEMINI_API_KEY`). Never exposed to client bundles.
-  - Coordinate bound verification (-90 to +90 lat, -180 to +180 lon) and string sanitization on all search query inputs.
-  - Strict JSON parsing with regex extraction to prevent injection.
+  - Strict runtime **Zod** schema validation (`src/lib/validation.ts`) on all `GET /api/aqidata` query params, `POST /api/recommendations` payloads, and Gemini JSON responses.
+  - HTTP security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`) configured in `next.config.ts`.
+  - Sanitized explicit HTTP errors (`AppError`, `404 CityNotFoundError`, `502 UpstreamServiceError`) and 8-second `AbortSignal.timeout` protection on external fetches.
 - **Efficiency (Medium Impact)**:
   - Next.js server caching: 5-minute revalidation for live air quality, 24-hour cache for city geocoding.
+  - Client-side `AbortController` request cancellation and 250ms debounced city autocomplete in `useAQIData.ts` to prevent race conditions.
   - Total repository size is **< 1 MB** (well under the 10 MB competition limit).
   - Preconnect and DNS prefetch tags for external API origins.
 - **Accessibility (Low Impact)**:
-  - Tested for WCAG 2.1 AA compliance with high-contrast text badges across all 6 AQI color categories.
-  - Full keyboard accessibility with skip links, semantic landmarks (`header`, `main`, `footer`, `section`, `role="alert"`), and ARIA labels.
-  - Screen reader announcements on live updates with `aria-live="assertive"`.
+  - Valid `h1 → h2 → h3 → h4` semantic heading hierarchy across dashboard cards, recommendations, and modals.
+  - Full keyboard and screen reader support: skip links, semantic landmarks, `role="tablist"`/`role="tab"`/`aria-selected`, `aria-pressed` toggles, `<fieldset>`/`<legend>` form groups, `Escape`/backdrop dialog dismissal, and `aria-live="assertive"` alerts.
 
 ---
 
@@ -210,8 +211,10 @@ The application includes an automated test suite executed via `tsx` and Node's t
 npm test
 ```
 
-### Test Coverage Highlights
+### Test Coverage Highlights (20 / 20 Passing across 5 Suites)
 - `tests/aqi-calculation.test.ts`: Validates US-EPA breakpoint interpolation for PM2.5, PM10, NO₂, CO, SO₂, O₃, category mappings, and safe window logic.
+- `tests/api-validation-errors.test.ts`: Verifies structured HTTP error classes (`404`/`502`), `aqiQuerySchema` bounds validation, and Gemini output schema compliance.
+- `tests/impact-calculator.test.ts`: Tests CO₂/PM2.5/financial impact calculations, negative input clamping, partial request validation, and icon fallbacks.
 - `tests/recommendations.test.ts`: Tests personalization logic for families, commuters, pet owners, and verifies emergency smog alert triggers.
 - `tests/geocoding-and-data.test.ts`: Tests real-time live API telemetry fetching, coordinate resolution, and city autocomplete.
 
@@ -220,14 +223,14 @@ npm test
 ## 🚀 Getting Started & Local Setup
 
 ### Prerequisites
-- Node.js 18+ (tested on Node 20 & 24)
+- Node.js 20+ (tested on Node 20 & 24)
 - npm or yarn
 
 ### Quick Start
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/urban-air-quality-assistant.git
-cd urban-air-quality-assistant
+git clone https://github.com/SparshM8/VayuGuard.git
+cd VayuGuard
 
 # 2. Install dependencies
 npm install
@@ -236,16 +239,15 @@ npm install
 cp .env.example .env.local
 # Edit .env.local and add your GEMINI_API_KEY (optional: smart fallback runs if omitted)
 
-# 4. Run tests
+# 4. Run full quality checks (lint, strict TypeScript typecheck, 20 tests)
+npm run lint
+npm run typecheck
 npm test
 
-# 5. Run ESLint check
-npm run lint
-
-# 6. Build production package
+# 5. Build production package
 npm run build
 
-# 7. Start local server
+# 6. Start local server
 npm run dev
 ```
 
