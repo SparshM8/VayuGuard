@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+/** Validates GET /api/aqidata query parameters across search, coordinate lookup, and city lookup modes. */
+export const aqiQuerySchema = z.object({
+  action: z.enum(['search']).optional(),
+  q: z.string().max(50).optional(),
+  city: z.string().trim().min(1).max(80).optional(),
+  country: z.string().trim().max(10).default('IN'),
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lon: z.coerce.number().min(-180).max(180).optional(),
+  cityName: z.string().trim().max(80).optional(),
+  countryName: z.string().trim().max(80).optional(),
+});
+
 export const userProfileSchema = z.enum([
   'commuter',
   'family',

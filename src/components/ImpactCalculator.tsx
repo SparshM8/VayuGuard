@@ -84,9 +84,9 @@ export function ImpactCalculator() {
               <Calculator className="w-6 h-6" />
             </div>
             <div>
-              <h3 id="calculator-heading" className="text-2xl font-bold tracking-tight">
+              <h2 id="calculator-heading" className="text-2xl font-bold tracking-tight">
                 Personal &amp; Household Impact Simulator
-              </h3>
+              </h2>
               <p className="text-slate-400 text-sm">
                 Quantify the direct emission reductions, toxic PM2.5 avoidance, and cost savings of your lifestyle
                 choices.

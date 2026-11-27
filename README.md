@@ -5,7 +5,7 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-VayuGuard_AI-blue?style=for-the-badge&logo=vercel)](https://vayu-guard-ten.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-SparshM8%2FVayuGuard-black?style=for-the-badge&logo=github)](https://github.com/SparshM8/VayuGuard)
 [![Video Demo](https://img.shields.io/badge/YouTube-Video_Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/GrbySw0j4k8)
-[![Tests Passing](https://img.shields.io/badge/Tests-17%2F17_Passing-emerald?style=for-the-badge)](https://github.com/SparshM8/VayuGuard)
+[![Tests Passing](https://img.shields.io/badge/Tests-20%2F20_Passing-emerald?style=for-the-badge)](https://github.com/SparshM8/VayuGuard)
 [![LinkedIn Post](https://img.shields.io/badge/LinkedIn-Announcement_Post-0A66C2?style=for-the-badge&logo=linkedin)](https://lnkd.in/p/gTSBfdGX)
 
 - 🌐 **Live Deployed App**: [https://vayu-guard-ten.vercel.app/](https://vayu-guard-ten.vercel.app/)
@@ -73,17 +73,22 @@
 
 ```
 urban-air-quality-assistant/
+├── .github/workflows/
+│   └── ci.yml                            # GitHub Actions CI (lint, typecheck, test, build)
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── aqidata/route.ts          # Real-time AQI & Geocoding endpoint
+│   │   │   ├── aqidata/route.ts          # Zod-validated real-time AQI & Geocoding endpoint
 │   │   │   └── recommendations/route.ts  # Zod-validated Gemini recommendation endpoint
+│   │   ├── error.tsx                     # App Router route-level React error boundary
+│   │   ├── not-found.tsx                 # Graceful 404 fallback view
 │   │   ├── layout.tsx                    # Next.js root layout with preconnect tags
 │   │   ├── page.tsx                      # Composed application shell & state orchestration
 │   │   └── globals.css                   # Tailwind CSS design tokens
 │   ├── components/
 │   │   ├── Header.tsx                    # Sticky brand bar, city search & GPS trigger
 │   │   ├── PersonaSwitcher.tsx           # Instant vulnerability & lifestyle persona bar
+│   │   ├── RecommendationsView.tsx       # Accessible tabbed recommendations container
 │   │   ├── AQIDashboard.tsx              # Main AQI card, source attribution & WHO limits
 │   │   ├── HourlyForecast.tsx            # 24-hour horizontal forecast timeline
 │   │   ├── ImpactCalculator.tsx          # Interactive What-If impact simulator
@@ -93,23 +98,28 @@ urban-air-quality-assistant/
 │   │   ├── RoutineSuggestions.tsx        # Daily low-emission routines
 │   │   ├── IndoorAirQuality.tsx          # Evidence-backed indoor air hacks
 │   │   ├── SustainableAlternatives.tsx   # Justified sustainable alternatives
-│   │   ├── UserProfileForm.tsx           # Persona & health preference modal
+│   │   ├── UserProfileForm.tsx           # Accessible fieldset/legend preference modal
 │   │   └── Footer.tsx                    # Live telemetry & methodology attribution
+│   ├── data/
+│   │   ├── recommendationsCatalog.ts     # Structured routines, indoor hacks & alternatives data
+│   │   └── smogDefensePlan.ts            # Printable household emergency defense checklists
 │   ├── hooks/
 │   │   └── useAQIData.ts                 # AbortController-hardened hooks & debounced search
 │   ├── lib/
 │   │   ├── aqiMath.ts                    # Pure US-EPA breakpoint & window calculations
-│   │   ├── aqidata.ts                    # Open-Meteo geocoding & telemetry fetcher
+│   │   ├── aqidata.ts                    # Timeout-guarded Open-Meteo geocoding & telemetry
 │   │   ├── constants.ts                  # Shared AQI themes, WHO limits & persona metadata
+│   │   ├── errors.ts                     # Explicit HTTP error classes (404 / 502 / 500)
 │   │   ├── fallbackRecommendations.ts    # Context-aware offline rule recommendation engine
 │   │   ├── impactCalculator.ts           # Pure CO₂, PM2.5 & financial impact model
 │   │   ├── icons.ts                      # Curated Lucide icon registry & badge styles
 │   │   ├── recommendations.ts            # Gemini prompt orchestration & Zod validation
-│   │   └── validation.ts                 # Runtime Zod schemas for API & AI payloads
+│   │   └── validation.ts                 # Runtime Zod schemas for query, request & AI outputs
 │   └── types/
 │       └── index.ts                      # TypeScript schemas & API interfaces
 └── tests/
     ├── aqi-calculation.test.ts           # EPA breakpoints & category unit tests
+    ├── api-validation-errors.test.ts     # Custom error classes & Zod schema unit tests
     ├── impact-calculator.test.ts         # Impact model, schema & icon unit tests
     ├── recommendations.test.ts           # Persona logic & smog alert tests
     └── geocoding-and-data.test.ts        # Live telemetry & autocomplete tests

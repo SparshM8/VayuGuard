@@ -6,6 +6,7 @@ import {
   getAQIColor,
   getAQIDescription,
 } from './aqiMath';
+import { CityNotFoundError, UpstreamServiceError } from './errors';
 
 export {
   calculateAQI,
@@ -17,6 +18,7 @@ export {
 
 const GEOCODING_BASE_URL = 'https://geocoding-api.open-meteo.com/v1';
 const AIR_QUALITY_BASE_URL = 'https://air-quality-api.open-meteo.com/v1';
+const REQUEST_TIMEOUT_MS = 8000;
 
 interface GeocodingRawItem {
   name: string;
@@ -51,6 +53,29 @@ interface PollutantSpec {
   value: number;
   unit: string;
   description: string;
+}
+
+async function fetchJsonWithTimeout<T>(
+  url: string,
+  serviceName: string,
+  revalidateSeconds: number
+): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      next: { revalidate: revalidateSeconds },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch {
+    throw new UpstreamServiceError(serviceName);
+  }
+
+  if (!res.ok) {
+    throw new UpstreamServiceError(serviceName, res.status);
+  }
+
+  return (await res.json()) as T;
 }
 
 function buildPollutantMetrics(current: OpenMeteoCurrentRaw): {
@@ -170,26 +195,20 @@ export async function geocodeCity(
 }> {
   const query = encodeURIComponent(city.trim());
   const url = `${GEOCODING_BASE_URL}/search?name=${query}&count=5&language=en&format=json`;
+  const data = await fetchJsonWithTimeout<{ results?: GeocodingRawItem[] }>(
+    url,
+    'Geocoding service',
+    86400
+  );
 
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    next: { revalidate: 86400 },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Geocoding service unavailable (status ${res.status})`);
-  }
-
-  const data = await res.json();
   if (!data.results || data.results.length === 0) {
-    throw new Error(`City "${city}" not found. Please verify spelling or try a nearby major city.`);
+    throw new CityNotFoundError(city);
   }
 
-  const results: GeocodingRawItem[] = data.results;
   const countryMatch = country
-    ? results.find((r) => r.country_code?.toLowerCase() === country.toLowerCase())
+    ? data.results.find((r) => r.country_code?.toLowerCase() === country.toLowerCase())
     : undefined;
-  const selected = countryMatch || results[0];
+  const selected = countryMatch || data.results[0];
 
   return {
     name: selected.name,
@@ -220,22 +239,16 @@ export async function fetchAQIByCoordinates(
     '&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,us_aqi,european_aqi' +
     '&hourly=pm2_5,pm10,us_aqi&forecast_days=2&timezone=auto';
 
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    next: { revalidate: 300 },
-  });
+  const data = await fetchJsonWithTimeout<{
+    current?: OpenMeteoCurrentRaw;
+    hourly?: OpenMeteoHourlyRaw;
+  }>(url, 'Air quality telemetry service', 300);
 
-  if (!res.ok) {
-    throw new Error(`Air quality service returned status ${res.status}`);
+  if (!data.current) {
+    throw new UpstreamServiceError('Air quality telemetry service');
   }
 
-  const data = await res.json();
-  const current: OpenMeteoCurrentRaw | undefined = data.current;
-  if (!current) {
-    throw new Error('No current air quality measurements available for this location.');
-  }
-
-  const { pollutants, overallAQI, dominantPollutant, pm25Value } = buildPollutantMetrics(current);
+  const { pollutants, overallAQI, dominantPollutant, pm25Value } = buildPollutantMetrics(data.current);
   const category = getAQICategory(overallAQI);
   const resolvedCountry = countryName || 'Earth';
 
@@ -250,7 +263,7 @@ export async function fetchAQIByCoordinates(
     aqi: overallAQI,
     category,
     pollutants,
-    timestamp: current.time ? new Date(current.time).toISOString() : new Date().toISOString(),
+    timestamp: data.current.time ? new Date(data.current.time).toISOString() : new Date().toISOString(),
     source: 'Open-Meteo Air Quality Engine (CAMS & CPCB Ground Reference)',
     sourceUrl: 'https://open-meteo.com/en/docs/air-quality-api',
     hourlyForecast: buildHourlyForecast(data.hourly),
@@ -265,17 +278,15 @@ export async function searchCities(query: string): Promise<CitySearchResult[]> {
 
   try {
     const url = `${GEOCODING_BASE_URL}/search?name=${encodeURIComponent(query.trim())}&count=8&language=en&format=json`;
-    const res = await fetch(url, {
-      headers: { Accept: 'application/json' },
-      next: { revalidate: 3600 },
-    });
+    const data = await fetchJsonWithTimeout<{ results?: GeocodingRawItem[] }>(
+      url,
+      'City autocomplete service',
+      3600
+    );
 
-    if (!res.ok) return [];
-
-    const data = await res.json();
     if (!data.results || !Array.isArray(data.results)) return [];
 
-    return (data.results as GeocodingRawItem[]).map((r) => ({
+    return data.results.map((r) => ({
       city: r.name,
       state: r.admin1,
       country: r.country || '',

@@ -6,19 +6,16 @@ import { DEFAULT_CITY, DEFAULT_USER_PREFERENCES, PROFILE_OPTIONS } from '@/lib/c
 import {
   Baby,
   Bike,
-  Building,
   Bus,
   Car,
   CheckCircle2,
   Filter,
   Footprints,
   Heart,
-  House,
   Leaf,
   Shield,
   Sliders,
   UserRound,
-  Users,
   X,
 } from 'lucide-react';
 
@@ -30,9 +27,9 @@ const TRANSPORT_OPTIONS = [
 ] as const;
 
 const HOME_TYPE_OPTIONS = [
-  { value: 'apartment', label: 'Apartment', icon: Building },
-  { value: 'house', label: 'Independent House', icon: House },
-  { value: 'shared', label: 'Shared / Hostel', icon: Users },
+  { value: 'apartment', label: 'Apartment' },
+  { value: 'house', label: 'Independent House' },
+  { value: 'shared', label: 'Shared / Hostel' },
 ] as const;
 
 const HEALTH_OPTIONS = [
@@ -54,7 +51,7 @@ interface UserProfileFormProps {
   onClose?: () => void;
 }
 
-/** Modal form allowing granular configuration of household health factors, transport, and home equipment. */
+/** Accessible modal form configuring user persona, household health factors, transit mode, and home gear. */
 export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: UserProfileFormProps) {
   const [profile, setProfile] = useState<UserProfile>(initialContext?.profile || 'family');
   const [location, setLocation] = useState(initialContext?.location || DEFAULT_CITY);
@@ -80,7 +77,9 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
             <Sliders className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold tracking-tight">Personalize Air Quality Guidance</h2>
+            <h2 id="profile-modal-title" className="text-lg font-bold tracking-tight">
+              Personalize Air Quality Guidance
+            </h2>
             <p className="text-xs text-slate-400">
               Tailors AI routines, pet-safe plant hacks, and smog inversion timings.
             </p>
@@ -91,7 +90,7 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
             type="button"
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-white/10 transition"
-            aria-label="Close modal"
+            aria-label="Close personalization modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -103,10 +102,10 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
         onSubmit={handleSubmit}
         className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-slate-200"
       >
-        <div className="space-y-2.5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <fieldset className="space-y-2.5">
+          <legend className="block text-xs font-bold uppercase tracking-wider text-slate-500">
             1. Select Your Lifestyle Profile
-          </label>
+          </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
             {PROFILE_OPTIONS.map((option) => {
               const IconComponent = option.icon;
@@ -115,6 +114,7 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
                 <button
                   type="button"
                   key={option.value}
+                  aria-pressed={isSelected}
                   onClick={() => setProfile(option.value)}
                   className={`p-3 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
                     isSelected
@@ -134,7 +134,7 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
               );
             })}
           </div>
-        </div>
+        </fieldset>
 
         <div className="space-y-2">
           <label htmlFor="city-input" className="block text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -151,10 +151,10 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
           />
         </div>
 
-        <div className="space-y-2.5">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <fieldset className="space-y-2.5">
+          <legend className="block text-xs font-bold uppercase tracking-wider text-slate-500">
             3. Household Health &amp; Sensitivities
-          </label>
+          </legend>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {HEALTH_OPTIONS.map(({ key, label, icon: IconComponent, desc }) => {
               const isChecked = preferences[key];
@@ -182,35 +182,39 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
               );
             })}
           </div>
-        </div>
+        </fieldset>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <fieldset className="space-y-2">
+            <legend className="block text-xs font-bold uppercase tracking-wider text-slate-500">
               4. Daily Commute Distance
-            </label>
+            </legend>
             <div className="flex gap-2">
-              {(['short', 'medium', 'long'] as const).map((distance) => (
-                <button
-                  type="button"
-                  key={distance}
-                  onClick={() => setPreferences({ ...preferences, commuteDistance: distance })}
-                  className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold border transition ${
-                    preferences.commuteDistance === distance
-                      ? 'border-blue-600 bg-blue-600 text-white'
-                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  {distance === 'short' ? '< 5 km' : distance === 'medium' ? '5–20 km' : '> 20 km'}
-                </button>
-              ))}
+              {(['short', 'medium', 'long'] as const).map((distance) => {
+                const isSelected = preferences.commuteDistance === distance;
+                return (
+                  <button
+                    type="button"
+                    key={distance}
+                    aria-pressed={isSelected}
+                    onClick={() => setPreferences({ ...preferences, commuteDistance: distance })}
+                    className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold border transition ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {distance === 'short' ? '< 5 km' : distance === 'medium' ? '5–20 km' : '> 20 km'}
+                  </button>
+                );
+              })}
             </div>
-          </div>
+          </fieldset>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <fieldset className="space-y-2">
+            <legend className="block text-xs font-bold uppercase tracking-wider text-slate-500">
               5. Primary Transport Mode
-            </label>
+            </legend>
             <div className="grid grid-cols-2 gap-2">
               {TRANSPORT_OPTIONS.map((opt) => {
                 const IconComponent = opt.icon;
@@ -219,6 +223,7 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
                   <button
                     type="button"
                     key={opt.value}
+                    aria-pressed={isSelected}
                     onClick={() => setPreferences({ ...preferences, transportMode: opt.value })}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition ${
                       isSelected
@@ -232,36 +237,40 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
                 );
               })}
             </div>
-          </div>
+          </fieldset>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <fieldset className="space-y-2">
+            <legend className="block text-xs font-bold uppercase tracking-wider text-slate-500">
               6. Housing Structure
-            </label>
+            </legend>
             <div className="flex gap-2">
-              {HOME_TYPE_OPTIONS.map((opt) => (
-                <button
-                  type="button"
-                  key={opt.value}
-                  onClick={() => setPreferences({ ...preferences, homeType: opt.value })}
-                  className={`flex-1 py-2 px-1 text-center rounded-xl text-xs font-semibold border transition ${
-                    preferences.homeType === opt.value
-                      ? 'border-blue-600 bg-blue-50 text-blue-900'
-                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+              {HOME_TYPE_OPTIONS.map((opt) => {
+                const isSelected = preferences.homeType === opt.value;
+                return (
+                  <button
+                    type="button"
+                    key={opt.value}
+                    aria-pressed={isSelected}
+                    onClick={() => setPreferences({ ...preferences, homeType: opt.value })}
+                    className={`flex-1 py-2 px-1 text-center rounded-xl text-xs font-semibold border transition ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50 text-blue-900'
+                        : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
-          </div>
+          </fieldset>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <fieldset className="space-y-2">
+            <legend className="block text-xs font-bold uppercase tracking-wider text-slate-500">
               7. Current Indoor Measures
-            </label>
+            </legend>
             <div className="flex gap-2">
               <label
                 className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-xl border text-xs font-semibold cursor-pointer transition ${
@@ -297,7 +306,7 @@ export function UserProfileForm({ initialContext, onSubmit, onSkip, onClose }: U
                 <span>Indoor Plants</span>
               </label>
             </div>
-          </div>
+          </fieldset>
         </div>
       </form>
 

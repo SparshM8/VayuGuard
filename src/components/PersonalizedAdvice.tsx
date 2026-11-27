@@ -31,7 +31,7 @@ export function PersonalizedAdvice({ advice, aqiCategory, aqiValue }: Personaliz
           </div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <h3 className="text-xl font-bold text-gray-900">Personalized Guidance</h3>
+              <h2 className="text-xl font-bold text-gray-900">Personalized Guidance</h2>
               <span className="px-2 py-1 rounded-full text-xs font-medium bg-white/50">
                 AQI: {aqiValue} ({aqiCategory})
               </span>

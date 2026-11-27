@@ -60,12 +60,12 @@ export function Header({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight block">
                   VayuGuard{' '}
                   <span className="text-blue-600 font-extrabold text-base bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200">
                     AI
                   </span>
-                </span>
+                </h1>
                 <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   CPCB &amp; CAMS LIVE
@@ -172,20 +172,24 @@ export function Header({
         {/* Quick-Pick Popular Cities Carousel */}
         <div className="flex items-center gap-2 py-2 overflow-x-auto border-t border-slate-100 scrollbar-none text-xs">
           <span className="text-slate-400 font-semibold whitespace-nowrap pl-0.5">Quick Hotspots:</span>
-          {QUICK_CITIES.map((option) => (
-            <button
-              key={option.city}
-              type="button"
-              onClick={() => onSelectCity(option.city, option.country)}
-              className={`px-3 py-1 rounded-full whitespace-nowrap transition font-medium ${
-                city.toLowerCase() === option.city.toLowerCase()
-                  ? 'bg-blue-600 text-white font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+          {QUICK_CITIES.map((option) => {
+            const isSelected = city.toLowerCase() === option.city.toLowerCase();
+            return (
+              <button
+                key={option.city}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onSelectCity(option.city, option.country)}
+                className={`px-3 py-1 rounded-full whitespace-nowrap transition font-medium ${
+                  isSelected
+                    ? 'bg-blue-600 text-white font-bold shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     </header>

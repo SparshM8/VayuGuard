@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { UserContext, UserProfile } from '@/types';
 import { DEFAULT_CITY, DEFAULT_COUNTRY, DEFAULT_USER_CONTEXT } from '@/lib/constants';
 import { useAQIData, useCitySearch, useRecommendations } from '@/hooks/useAQIData';
@@ -8,26 +8,13 @@ import { Header } from '@/components/Header';
 import { PersonaSwitcher } from '@/components/PersonaSwitcher';
 import { Footer } from '@/components/Footer';
 import { AQIDashboard } from '@/components/AQIDashboard';
-import { RoutineSuggestions } from '@/components/RoutineSuggestions';
-import { IndoorAirQuality } from '@/components/IndoorAirQuality';
-import { SustainableAlternatives } from '@/components/SustainableAlternatives';
+import { RecommendationsView } from '@/components/RecommendationsView';
 import { UserProfileForm } from '@/components/UserProfileForm';
-import { PersonalizedAdvice } from '@/components/PersonalizedAdvice';
-import { ImpactCalculator } from '@/components/ImpactCalculator';
 import { SmogAlertBanner } from '@/components/SmogAlertBanner';
 import { FamilySmogDefensePlan } from '@/components/FamilySmogDefensePlan';
 import { MapPin, TriangleAlert, X } from 'lucide-react';
 
-type DashboardTab = 'all' | 'routines' | 'indoor' | 'alternatives' | 'calculator';
-
-const DASHBOARD_TABS: { key: DashboardTab; label: string }[] = [
-  { key: 'all', label: 'All Insights & Solutions' },
-  { key: 'routines', label: 'Low-Emission Routines' },
-  { key: 'indoor', label: 'NASA Indoor Hacks' },
-  { key: 'alternatives', label: 'Sustainable Alternatives' },
-  { key: 'calculator', label: 'Impact Simulator' },
-];
-
+/** Main client coordinator assembling live telemetry, persona switching, recommendations, and modals. */
 export default function HomePage() {
   const [city, setCity] = useState(DEFAULT_CITY);
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
@@ -36,14 +23,18 @@ export default function HomePage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [locatingUser, setLocatingUser] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<DashboardTab>('all');
   const [userContext, setUserContext] = useState<UserContext>(DEFAULT_USER_CONTEXT);
 
   const { data: aqiData, loading: aqiLoading, error: aqiError, refetch, fetchByCoords } = useAQIData(
     city,
     country
   );
-  const { data: recommendations, loading: recLoading, generate } = useRecommendations();
+  const {
+    data: recommendations,
+    loading: recLoading,
+    error: recError,
+    generate,
+  } = useRecommendations();
   const { results: searchResults, search: triggerCitySearch } = useCitySearch();
 
   useEffect(() => {
@@ -51,6 +42,18 @@ export default function HomePage() {
       void generate(aqiData, userContext);
     }
   }, [aqiData, userContext, generate]);
+
+  useEffect(() => {
+    if (!showProfileModal && !isDefensePlanOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowProfileModal(false);
+        setIsDefensePlanOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [showProfileModal, isDefensePlanOpen]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchInput(value);
@@ -117,6 +120,12 @@ export default function HomePage() {
     }));
   };
 
+  const handleRetryRecommendations = useCallback(() => {
+    if (aqiData) {
+      void generate(aqiData, userContext);
+    }
+  }, [aqiData, userContext, generate]);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       <a
@@ -143,7 +152,6 @@ export default function HomePage() {
       <PersonaSwitcher activeProfile={userContext.profile} onSelectProfile={handleQuickPersonaSwitch} />
 
       <main id="main-content" className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
-        {/* Mobile Search Input */}
         <div className="md:hidden">
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
             <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -153,7 +161,7 @@ export default function HomePage() {
               onChange={(e) => handleSearchInputChange(e.target.value)}
               placeholder="Search city (e.g. Delhi, London)..."
               className="w-full pl-10 pr-20 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm shadow-sm"
-              aria-label="Search city for air quality"
+              aria-label="Search city on mobile"
             />
             <button
               type="submit"
@@ -164,7 +172,6 @@ export default function HomePage() {
           </form>
         </div>
 
-        {/* Accessible Geolocation Warning Banner */}
         {geoError && (
           <div
             role="status"
@@ -185,7 +192,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Global API Error Notice */}
         {aqiError && (
           <div
             role="alert"
@@ -217,6 +223,14 @@ export default function HomePage() {
               onRefresh={() => void refetch()}
               onOpenDefensePlan={() => setIsDefensePlanOpen(true)}
             />
+            <RecommendationsView
+              aqiData={aqiData}
+              recommendations={recommendations}
+              loading={recLoading}
+              error={recError}
+              activeProfile={userContext.profile}
+              onRetry={handleRetryRecommendations}
+            />
           </>
         )}
 
@@ -228,72 +242,6 @@ export default function HomePage() {
             </p>
           </div>
         )}
-
-        {recommendations && aqiData && (
-          <>
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto scrollbar-none text-xs font-semibold">
-              <span className="text-slate-400 uppercase tracking-wider text-[11px] mr-1">Views:</span>
-              {DASHBOARD_TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`px-3.5 py-1.5 rounded-xl whitespace-nowrap transition ${
-                    activeTab === tab.key
-                      ? 'bg-slate-900 text-white font-bold'
-                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-8 animate-in fade-in duration-300">
-              <PersonalizedAdvice
-                advice={recommendations.personalizedAdvice}
-                aqiCategory={aqiData.category}
-                aqiValue={aqiData.aqi}
-              />
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {(activeTab === 'all' || activeTab === 'routines' || activeTab === 'indoor') && (
-                  <div className={`space-y-8 ${activeTab === 'all' ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
-                    {(activeTab === 'all' || activeTab === 'routines') && (
-                      <RoutineSuggestions routines={recommendations.routines} />
-                    )}
-                    {(activeTab === 'all' || activeTab === 'indoor') && (
-                      <IndoorAirQuality hacks={recommendations.indoorHacks} />
-                    )}
-                  </div>
-                )}
-
-                {(activeTab === 'all' || activeTab === 'alternatives') && (
-                  <div className={`space-y-8 ${activeTab === 'alternatives' ? 'lg:col-span-3' : ''}`}>
-                    <SustainableAlternatives alternatives={recommendations.alternatives} />
-                  </div>
-                )}
-              </div>
-
-              {(activeTab === 'all' || activeTab === 'calculator') && <ImpactCalculator />}
-            </div>
-          </>
-        )}
-
-        {recLoading && !recommendations && aqiData && (
-          <div className="text-center py-16 p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
-            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
-            <div className="space-y-1">
-              <p className="text-base font-bold text-slate-800">
-                Generating Personalized Recommendations with AI...
-              </p>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Analyzing PM2.5 levels, {userContext.profile} context, and winter smog inversions to craft
-                actionable routines.
-              </p>
-            </div>
-          </div>
-        )}
       </main>
 
       {showProfileModal && (
@@ -301,6 +249,10 @@ export default function HomePage() {
           className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150"
           role="dialog"
           aria-modal="true"
+          aria-labelledby="profile-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowProfileModal(false);
+          }}
         >
           <div className="w-full max-w-2xl">
             <UserProfileForm
